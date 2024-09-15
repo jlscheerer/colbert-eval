@@ -17,6 +17,8 @@ import os
 import pathlib
 from torch.utils.cpp_extension import load
 
+from benchmark.tracker import NOPTracker
+
 class IndexScorer(IndexLoader, CandidateGeneration):
     def __init__(self, index_path, use_gpu=True, load_index_with_mmap=False):
         super().__init__(
@@ -84,8 +86,9 @@ class IndexScorer(IndexLoader, CandidateGeneration):
         all_pids = torch.unique(self.emb2pid[embedding_ids.long()].cuda(), sorted=False)
         return all_pids
 
-    def rank(self, config, Q, filter_fn=None, pids=None):
+    def rank(self, config, Q, filter_fn=None, pids=None, tracker=NOPTracker):
         with torch.inference_mode():
+            tracker.begin("Candidate Generation")
             if pids is None:
                 pids, centroid_scores = self.retrieve(config, Q)
             else:
@@ -100,15 +103,18 @@ class IndexScorer(IndexLoader, CandidateGeneration):
                 pids = filtered_pids
                 if len(pids) == 0:
                     return [], []
+            tracker.end("Candidate Generation")
 
-            scores, pids = self.score_pids(config, Q, pids, centroid_scores)
+            scores, pids = self.score_pids(config, Q, pids, centroid_scores, tracker=tracker)
 
+            tracker.begin("Sorting")
             scores_sorter = scores.sort(descending=True)
             pids, scores = pids[scores_sorter.indices].tolist(), scores_sorter.values.tolist()
+            tracker.end("Sorting")
 
             return pids, scores
 
-    def score_pids(self, config, Q, pids, centroid_scores):
+    def score_pids(self, config, Q, pids, centroid_scores, tracker=NOPTracker()):
         """
             Always supply a flat list or tensor for `pids`.
 
@@ -125,6 +131,7 @@ class IndexScorer(IndexLoader, CandidateGeneration):
 
         idx = centroid_scores.max(-1).values >= config.centroid_score_threshold
 
+        tracker.begin("Filtering")
         if self.use_gpu:
             approx_scores = []
 
@@ -163,7 +170,9 @@ class IndexScorer(IndexLoader, CandidateGeneration):
                     pids, centroid_scores, self.embeddings.codes, self.doclens,
                     self.offsets, idx, config.ndocs
                 )
+        tracker.end("Filtering")
 
+        tracker.begin("Decompress Residuals")
         # Rank final list of docs using full approximate embeddings (including residuals)
         if self.use_gpu:
             D_packed, D_mask = self.lookup_pids(pids)
@@ -183,11 +192,17 @@ class IndexScorer(IndexLoader, CandidateGeneration):
                 )
             D_packed = torch.nn.functional.normalize(D_packed.to(torch.float32), p=2, dim=-1)
             D_mask = self.doclens[pids.long()]
+        tracker.end("Decompress Residuals")
 
+        tracker.begin("Scoring")
         if Q.size(0) == 1:
-            return colbert_score_packed(Q, D_packed, D_mask, config), pids
+            scores = colbert_score_packed(Q, D_packed, D_mask, config), pids
+            tracker.end("Scoring")
+            return scores
 
         D_strided = StridedTensor(D_packed, D_mask, use_gpu=self.use_gpu)
         D_padded, D_lengths = D_strided.as_padded_tensor()
 
-        return colbert_score(Q, D_padded, D_lengths, config), pids
+        scores = colbert_score(Q, D_padded, D_lengths, config), pids
+        tracker.end("Scoring")
+        return scores
