@@ -35,4 +35,4 @@ def run_plaid_evaluation(collection, dataset, split, k, nbits=2, show_progress=T
 
     metrics = data.submit(rankings, k=k)
 
-    return metrics, tracker.as_dict()
+    return tracker, metrics

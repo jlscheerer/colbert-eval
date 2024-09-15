@@ -1,4 +1,5 @@
 /experiments/
+!/experiments/configs/
 /checkpoints/
 /data/
 /logs/
