@@ -3,7 +3,7 @@ import jsonlines
 
 from colbert.data import Queries
 
-LOTTE_COLLECTION_PATH = "/lfs/1/scheerer/datasets/lotte/lotte/"
+LOTTE_COLLECTION_PATH = os.environ["LOTTE_COLLECTION_PATH"]
 
 class LoTTEBenchmarkData:
     def __init__(self, collection, dataset, split):

@@ -1,10 +1,11 @@
 import argparse
 import psutil
+import os
+from dotenv import load_dotenv
 
 from utility.executor_utils import load_configuration, execute_configs, spawn_and_execute
 
 def latency(config, params):
-    assert len(params) == 0
     NUM_RUNS = params.get("num_runs", 3)
     assert NUM_RUNS > 0
     results = []
@@ -24,6 +25,8 @@ def metrics(config, params):
     }
 
 if __name__ == "__main__":
+    load_dotenv()
+
     parser = argparse.ArgumentParser(prog='XTR/WARP Experiment [Executor/Platform]')
     parser.add_argument("-c", "--config", required=True)
     parser.add_argument("-w", "--workers", type=int)
