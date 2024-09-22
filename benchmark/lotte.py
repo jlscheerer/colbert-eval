@@ -55,6 +55,6 @@ class LoTTEBenchmarkData:
         K_VALUES = [5, 10, 100, 1000]
         final_metrics = dict()
         for k in K_VALUES:
-            final_metrics[f"success@{k}"] = LoTTEBenchmarkData._success_at_k_lotte(expected=self.qas, rankings=ranking, k=k)
-            final_metrics[f"recall@{k}"] = LoTTEBenchmarkData._recall_at_k_lotte(expected=self.qas, rankings=ranking, k=k)
+            final_metrics[f"success@{k}"] = LoTTEBenchmarkData._success_at_k_lotte(expected=self.qas, rankings=rankings, k=k)
+            final_metrics[f"recall@{k}"] = LoTTEBenchmarkData._recall_at_k_lotte(expected=self.qas, rankings=rankings, k=k)
         return final_metrics
