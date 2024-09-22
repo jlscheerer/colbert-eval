@@ -3,7 +3,7 @@ import jsonlines
 
 from colbert.data import Queries
 
-LOTTE_COLLECTION_PATH = "/lfs/1/scheerer/datasets/lotte/lotte/"
+LOTTE_COLLECTION_PATH = os.environ["LOTTE_COLLECTION_PATH"]
 
 class LoTTEBenchmarkData:
     def __init__(self, collection, dataset, split):
@@ -55,6 +55,12 @@ class LoTTEBenchmarkData:
         K_VALUES = [5, 10, 100, 1000]
         final_metrics = dict()
         for k in K_VALUES:
+<<<<<<< HEAD
             final_metrics[f"success@{k}"] = LoTTEBenchmarkData._success_at_k_lotte(expected=self.qas, rankings=rankings, k=k)
             final_metrics[f"recall@{k}"] = LoTTEBenchmarkData._recall_at_k_lotte(expected=self.qas, rankings=rankings, k=k)
         return final_metrics
+=======
+            final_metrics[f"success@{k}"] = LoTTEBenchmarkData._success_at_k_lotte(expected=self.qas, rankings=ranking, k=k)
+            final_metrics[f"recall@{k}"] = LoTTEBenchmarkData._recall_at_k_lotte(expected=self.qas, rankings=ranking, k=k)
+        return final_metrics
+>>>>>>> c0a49b6f3f574e1c52a302d127f5cbdf59a56ab3

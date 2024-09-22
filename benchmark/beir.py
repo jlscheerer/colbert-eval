@@ -6,7 +6,7 @@ import pytrec_eval
 
 from colbert.data import Queries
 
-BEIR_COLLECTION_PATH = "/lfs/1/scheerer/datasets/beir/datasets"
+BEIR_COLLECTION_PATH = os.environ["BEIR_COLLECTION_PATH"]
 
 def eval_metrics_beir(qrels, dict_rankings):
     K_VALUES = [5, 10, 50, 100]
