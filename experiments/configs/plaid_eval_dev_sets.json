@@ -1,0 +1,21 @@
+{
+    "name": "plaid_eval_dev_sets",
+    "type": "latency",
+    "configurations": {
+        "datasets": [
+            "beir.nfcorpus",
+            "beir.quora",
+            "beir.fiqa",
+            "lotte.lifestyle",
+            "lotte.recreation",
+            "lotte.writing",
+            "lotte.technology",
+            "lotte.science",
+            "lotte.pooled"
+        ],
+        "datasplit": "dev",
+        "nbits": 2,
+        "document_top_k": [10, 100, 1000],
+        "num_threads": [1, 2, 4, 8, 16]
+    }
+}
